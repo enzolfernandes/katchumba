@@ -1,5 +1,5 @@
 // Constantes para ajuste do controle
-const int baseSpeed = 150;
+const int baseSpeed = 255;
 const float turnRatio = 0.8;
 const int white = 3000;
 const int black = 150;
@@ -23,12 +23,12 @@ const int motorRightB = 35;
 const int motorRightEnable = 33;
 
 // Constantes para ajuste do controle
-const int baseSpeed = 255;//Valor referente ao arduino, pesquisar equivalente ESP
-const float turnRatio = 0.8;
+//const int baseSpeed = 255;//Valor referente ao arduino, pesquisar equivalente ESP
+//const float turnRatio = 0.8;
 
 // Variáveis para controle do estado do sensor de marcação
-bool rightSensorDetected = false;
-bool leftSensorDetected = false;
+//bool rightSensorDetected = false;
+//bool leftSensorDetected = false;
 
 void setup() {
   // Configuração dos pinos dos sensores como entrada
@@ -125,6 +125,6 @@ void stopRobot() {
   digitalWrite(motorLeftA, LOW);
   digitalWrite(motorLeftB, LOW);
   digitalWrite(motorRightA, LOW);
-  digitalWrite(motorRightB, LOW);
-  }
+  digitalWrite(motorRightB, LOW);
+  }
 }
