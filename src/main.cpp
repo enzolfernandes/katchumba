@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 // Constantes para ajuste do controle
 constexpr const short baseSpeed = 255;
 constexpr const float turnRatio = 0.8;
@@ -24,6 +26,8 @@ constexpr const short motorLeftEnable = 4;
 constexpr const short motorRightA = 32;
 constexpr const short motorRightB = 35;
 constexpr const short motorRightEnable = 33;
+
+#include "functions.cpp"
 
 void setup()
 {
@@ -87,32 +91,4 @@ void loop()
   // Controle dos motores
   controlMotor1(speedLeft);
   controlMotor2(speedRight);
-}
-
-// Função para controlar o motor 1
-void controlMotor1(short speed)
-{
-  digitalWrite(motorLeftA, speed > 0 ? HIGH : LOW);
-  digitalWrite(motorLeftB, LOW);
-  analogWrite(motorLeftEnable, abs(speed));
-}
-
-// Função para controlar o motor 2
-void controlMotor2(short speed)
-{
-  digitalWrite(motorRightA, speed > 0 ? HIGH : LOW);
-  digitalWrite(motorRightB, LOW);
-  analogWrite(motorRightEnable, abs(speed));
-}
-
-// Função para parar o robô
-void stopRobot()
-{
-  while (true)
-  {
-    digitalWrite(motorLeftA, LOW);
-    digitalWrite(motorLeftB, LOW);
-    digitalWrite(motorRightA, LOW);
-    digitalWrite(motorRightB, LOW);
-  }
 }
