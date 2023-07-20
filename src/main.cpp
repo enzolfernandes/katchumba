@@ -1,3 +1,7 @@
+// ! Modos
+//* Enquanto a linha abaixo não for um comentário, a referente parte não será compilada
+#define _DEBUG_
+
 #include <Arduino.h>
 
 // Constantes para ajuste do controle
@@ -31,6 +35,17 @@ constexpr const short motorRightEnable = 33;
 
 void setup()
 {
+  // Alocação de todos os timers
+  //* Por padrão, a biblioteca ESP32PWM reserva apenas o Timer 0 para uso. Usando a definição abaixo é permitida a alocação de todos os timers (0, 1, 2 e 3) para uso com a biblioteca.
+  ESP32PWM::allocateTimer(0);
+  ESP32PWM::allocateTimer(1);
+  ESP32PWM::allocateTimer(2);
+  ESP32PWM::allocateTimer(3);
+
+#ifdef _DEBUG_
+  Serial.begin(115200);
+#endif
+
   // Configuração dos pinos dos sensores como entrada
   pinMode(sensorCenterLeft, INPUT);
   pinMode(sensorCenter, INPUT);
@@ -56,6 +71,19 @@ void loop()
   short sensorRightValue = analogRead(sensorRight);
   short sensorLeftValue = analogRead(sensorLeft);
 
+#ifdef _DEBUG_
+  Serial.println("---------");
+
+  Serial.print("sensorCenterLeftValue: ");
+  Serial.println(sensorCenterLeftValue);
+  Serial.print("sensorCenterValue: ");
+  Serial.println(sensorCenterValue);
+  Serial.print("sensorCenterRightValue: ");
+  Serial.println(sensorCenterRightValue);
+
+  Serial.println();
+#endif
+
   if ((sensorRightValue > white) && (sensorLeftValue < black))
   {
     lapMarker = lapMarker + 1;
@@ -65,30 +93,53 @@ void loop()
     stopRobot();
   }
 
+#ifdef _DEBUG_
+  Serial.print("lapMarker: ");
+  Serial.println(lapMarker);
+
+  Serial.println();
+#endif
+
   // Verificação se o robô está na linha com os sensores centrais
   bool onTrack = (sensorCenterLeftValue > white && sensorCenterValue > white && sensorCenterRightValue > white);
 
   // Cálculo do erro
-  short error = sensorCenterValue - ((sensorCenterLeftValue + sensorCenterRightValue) / 2);
+  float error = sensorCenterValue - ((sensorCenterLeftValue + sensorCenterRightValue) / 2);
 
   // Cálculo da correção para manter o robô na linha
-  short correction = error * turnRatio;
+  float correction = error * turnRatio;
 
   // Atualização da velocidade dos motores
   short speedLeft = baseSpeed - correction;
   short speedRight = baseSpeed - correction;
 
   // Limitação da velocidade dos motores
-  if (speedLeft < 0)
-    speedLeft = 0;
-  if (speedLeft > baseSpeed)
-    speedLeft = baseSpeed;
-  if (speedRight < 0)
-    speedRight = 0;
-  if (speedRight > baseSpeed)
-    speedRight = baseSpeed;
+  speedLeft = constrain(speedLeft, 0, 255);
+  speedRight = constrain(speedRight, 0, 255);
 
   // Controle dos motores
   controlMotor1(speedLeft);
   controlMotor2(speedRight);
+
+#ifdef _DEBUG_
+  Serial.print("onTrack: ");
+  Serial.println(onTrack);
+
+  Serial.print("error: ");
+  Serial.println(error);
+
+  Serial.print("correction: ");
+  Serial.println(correction);
+
+  Serial.print("speedLeft: ");
+  Serial.println(speedLeft);
+  Serial.print("speedRight: ");
+  Serial.println(speedRight);
+
+  Serial.println();
+#endif
+
+#ifdef _DEBUG_
+  delay(500);
+#endif
 }
