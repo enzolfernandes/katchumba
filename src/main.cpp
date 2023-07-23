@@ -1,14 +1,15 @@
 // ! Modos
 //* Enquanto a linha abaixo não for um comentário, a referente parte não será compilada
-#define _DEBUG_
+ #define _DEBUG_
 
 #include <Arduino.h>
 
 // Constantes para ajuste do controle
-constexpr const short baseSpeed = 255;
+constexpr const short baseSpeed = 1023; // Resolução do Arduino: 8 bits
+                                       // Resolução do ESP32: 10 bits
 constexpr const float turnRatio = 0.8;
-constexpr const short white = 3000;
-constexpr const short black = 150;
+constexpr const short white = 3800;
+constexpr const short black = 3799;
 short lapMarker = 0;
 
 // Variáveis para controle do estado do sensor de marcação
@@ -114,8 +115,8 @@ void loop()
   short speedRight = baseSpeed - correction;
 
   // Limitação da velocidade dos motores
-  speedLeft = constrain(speedLeft, 0, 255);
-  speedRight = constrain(speedRight, 0, 255);
+  speedLeft = constrain(speedLeft, 0, baseSpeed);
+  speedRight = constrain(speedRight, 0, baseSpeed);
 
   // Controle dos motores
   controlMotor1(speedLeft);
