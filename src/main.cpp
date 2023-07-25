@@ -79,6 +79,7 @@ void loop()
   Serial.println();
 #endif
 
+  // Detecção no sensor de volta (Direito)
   if ((sensorRightValue >= white) && (sensorLeftValue <= black))
   {
     lapMarker = lapMarker + 1;
@@ -88,15 +89,24 @@ void loop()
     stopRobot();
   }
 
+  // Verificação se o robô está na linha com o sensor central
+  bool onTrack = (sensorCenterValue >= white);
+
+  // Detecção no sensor de curva (Esquerdo)
+  bool curveWarning = (sensorLeftValue >= white) && (sensorRightValue <= black);
+  // TODO: Implementar lógica de curva?
+
 #ifdef _DEBUG_
+
   Serial.print("lapMarker: ");
   Serial.println(lapMarker);
+  Serial.print("onTrack: ");
+  Serial.println(onTrack);
+  Serial.print("curveWarning: ");
+  Serial.println(curveWarning);
 
   Serial.println();
 #endif
-
-  // Verificação se o robô está na linha com o sensor central
-  bool onTrack = (sensorCenterValue >= white);
 
   // Cálculo de Erro
   /*
@@ -125,10 +135,6 @@ void loop()
   controlMotorRight(speedRight);
 
 #ifdef _DEBUG_
-  Serial.print("onTrack: ");
-  Serial.println(onTrack);
-
-  Serial.println();
 
   Serial.print("differenceLeft: ");
   Serial.println(differenceLeft);
