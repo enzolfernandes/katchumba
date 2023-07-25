@@ -1,5 +1,5 @@
 // Função para controlar o motor 1
-void controlMotor1(unsigned int speed)
+void controlMotorLeft(unsigned int speed)
 {
     digitalWrite(motorLeftA, speed > 0 ? HIGH : LOW);
     digitalWrite(motorLeftB, LOW);
@@ -7,7 +7,7 @@ void controlMotor1(unsigned int speed)
 }
 
 // Função para controlar o motor 2
-void controlMotor2(unsigned int speed)
+void controlMotorRight(unsigned int speed)
 {
     digitalWrite(motorRightA, speed > 0 ? HIGH : LOW);
     digitalWrite(motorRightB, LOW);

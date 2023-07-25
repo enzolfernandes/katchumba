@@ -12,6 +12,8 @@ Como?
 #include <Arduino.h>
 
 // Constantes para ajuste do controle
+constexpr const short sensorMaxValue = 4095;
+constexpr const short sensorMinValue = 75;
 constexpr const unsigned int baseSpeed = 65535; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
 constexpr const float turnRatio = 0.2;
 constexpr const short white = 3800;
@@ -103,7 +105,7 @@ void loop()
   // Verificação se o robô está na linha com o sensor central
   bool onTrack = (sensorCenterValue >= white);
 
-  // Cálculo de diferença
+  // Cálculo de Erro
   /*
   -: que que sejam o mais próximo ambos os valores
   +: Quero que eles sejam o mais diferentes o possível
@@ -113,23 +115,21 @@ void loop()
   float differenceCenter = (sensorCenterValue - ((sensorCenterLeftValue + sensorCenterRightValue) / 2)); // Talvez não tenha utilidade
 
   // Cálculo da correção para manter o robô na linha
+  // Correção converte valores do sensor para valores do motor
   // Sensores center left e center right estão muito longe do centro logo a correção não pode ter um valor significativo
-  float correctionLeft = differenceLeft * turnRatio;
-  float correctionRight = differenceRight * turnRatio;
-  float correctionCenter = differenceCenter * turnRatio; // Talvez não tenha utilidade
+  float correctionLeft = map(differenceLeft, sensorMinValue, sensorMaxValue, 0, baseSpeed) * turnRatio;
+  float correctionRight = map(differenceRight, sensorMinValue, sensorMaxValue, 0, baseSpeed) * turnRatio;
+  float correctionCenter = map(differenceCenter, sensorMinValue, sensorMaxValue, 0, baseSpeed) * turnRatio; // Talvez não tenha utilidade
 
   // Atualização da velocidade dos motores
-  // Quero que ele se afaste do branco, logo o motor oposto deve agir caso ele se aproxime
-  unsigned int speedLeft = baseSpeed - correctionRight;
-  unsigned int speedRight = baseSpeed - correctionLeft;
-
-  // Limitação da velocidade dos motores
-  speedLeft = constrain(speedLeft, 0, baseSpeed);
-  speedRight = constrain(speedRight, 0, baseSpeed);
+  // Quero que ele se afaste do branco, logo o motor do mesmo lado deve reduzir a velocidade deve agir ele se aproxime
+  // Limitação da velocidade dos motores para valores cabíveis
+  unsigned int speedLeft = constrain((baseSpeed - correctionLeft), 0, baseSpeed);
+  unsigned int speedRight = constrain((baseSpeed - correctionRight), 0, baseSpeed);
 
   // Controle dos motores
-  controlMotor1(speedLeft);
-  controlMotor2(speedRight);
+  controlMotorLeft(speedLeft);
+  controlMotorRight(speedRight);
 
 #ifdef _DEBUG_
   Serial.print("onTrack: ");
