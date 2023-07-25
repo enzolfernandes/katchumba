@@ -1,13 +1,19 @@
+///// TODO: Ajustar motores de forma unilateral
+/*
+Como?
+- Erro Direto corrige motor esquerdo somente
+- Erro Esquerdo corrige motor esquerdo somente
+*/
+
 // ! Modos
 //* Enquanto a linha abaixo não for um comentário, a referente parte não será compilada
- #define _DEBUG_
+#define _DEBUG_
 
 #include <Arduino.h>
 
 // Constantes para ajuste do controle
-constexpr const short baseSpeed = 1023; // Resolução do Arduino: 8 bits
-                                       // Resolução do ESP32: 10 bits
-constexpr const float turnRatio = 0.8;
+constexpr const short baseSpeed = 65535; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
+constexpr const float turnRatio = 0.2;
 constexpr const short white = 3800;
 constexpr const short black = 3799;
 short lapMarker = 0;
@@ -36,13 +42,6 @@ constexpr const short motorRightEnable = 33;
 
 void setup()
 {
-  // Alocação de todos os timers
-  //* Por padrão, a biblioteca ESP32PWM reserva apenas o Timer 0 para uso. Usando a definição abaixo é permitida a alocação de todos os timers (0, 1, 2 e 3) para uso com a biblioteca.
-  ESP32PWM::allocateTimer(0);
-  ESP32PWM::allocateTimer(1);
-  ESP32PWM::allocateTimer(2);
-  ESP32PWM::allocateTimer(3);
-
 #ifdef _DEBUG_
   Serial.begin(115200);
 #endif
@@ -85,7 +84,7 @@ void loop()
   Serial.println();
 #endif
 
-  if ((sensorRightValue > white) && (sensorLeftValue < black))
+  if ((sensorRightValue >= white) && (sensorLeftValue <= black))
   {
     lapMarker = lapMarker + 1;
   }
@@ -101,18 +100,28 @@ void loop()
   Serial.println();
 #endif
 
-  // Verificação se o robô está na linha com os sensores centrais
-  bool onTrack = (sensorCenterLeftValue > white && sensorCenterValue > white && sensorCenterRightValue > white);
+  // Verificação se o robô está na linha com o sensor central
+  bool onTrack = (sensorCenterValue >= white);
 
-  // Cálculo do erro
-  float error = sensorCenterValue - ((sensorCenterLeftValue + sensorCenterRightValue) / 2);
+  // Cálculo da diferença
+  /*
+  -: que que sejam o mais próximo ambos os valores
+  +: Quero que eles sejam o mais diferentes o possível
+  */
+  float differenceLeft = (sensorCenterValue - sensorCenterLeftValue);
+  float differenceRight = (sensorCenterValue - sensorCenterRightValue);
+  float differenceCenter = (sensorCenterValue - ((sensorCenterLeftValue + sensorCenterRightValue) / 2)); // Talvez não tenha utilidade
 
   // Cálculo da correção para manter o robô na linha
-  float correction = error * turnRatio;
+  // Sensores center left e center right estão muito longe do centro logo a correção não pode ter um valor significativo
+  float correctionLeft = differenceLeft * turnRatio;
+  float correctionRight = differenceRight * turnRatio;
+  float correctionCenter = differenceCenter * turnRatio; // Talvez não tenha utilidade
 
   // Atualização da velocidade dos motores
-  short speedLeft = baseSpeed - correction;
-  short speedRight = baseSpeed - correction;
+  // Quero que ele se afaste do branco, logo o motor oposto deve agir caso ele se aproxime
+  short speedLeft = baseSpeed - correctionRight;
+  short speedRight = baseSpeed - correctionLeft;
 
   // Limitação da velocidade dos motores
   speedLeft = constrain(speedLeft, 0, baseSpeed);
@@ -126,11 +135,25 @@ void loop()
   Serial.print("onTrack: ");
   Serial.println(onTrack);
 
-  Serial.print("error: ");
-  Serial.println(error);
+  Serial.println();
 
-  Serial.print("correction: ");
-  Serial.println(correction);
+  Serial.print("differenceLeft: ");
+  Serial.println(differenceLeft);
+  Serial.print("differenceRight: ");
+  Serial.println(differenceRight);
+  Serial.print("differenceCenter: ");
+  Serial.println(differenceCenter);
+
+  Serial.println();
+
+  Serial.print("correctionLeft: ");
+  Serial.println(correctionLeft);
+  Serial.print("correctionRight: ");
+  Serial.println(correctionRight);
+  Serial.print("correctionCenter: ");
+  Serial.println(correctionCenter);
+
+  Serial.println();
 
   Serial.print("speedLeft: ");
   Serial.println(speedLeft);
