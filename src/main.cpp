@@ -5,11 +5,17 @@
 #include <Arduino.h>
 
 // Constantes para ajuste do controle
-constexpr const short baseSpeed = 1023; // Resolução do Arduino: 8 bits
+constexpr const short baseSpeed = 155; // Resolução do Arduino: 8 bits
                                        // Resolução do ESP32: 10 bits
-constexpr const float turnRatio = 0.8;
-constexpr const short white = 3800;
-constexpr const short black = 3799;
+constexpr const float turnRatio = 0.5;
+constexpr const short white  = 3000; //
+short black  = 1500; //
+//constexpr const short whiteCL = 3000; //
+short blackCL = 0; //
+
+//constexpr const short whiteCR = 3000; //
+short blackCR = 0; //
+
 short lapMarker = 0;
 
 // Variáveis para controle do estado do sensor de marcação
@@ -36,13 +42,6 @@ constexpr const short motorRightEnable = 33;
 
 void setup()
 {
-  // Alocação de todos os timers
-  //* Por padrão, a biblioteca ESP32PWM reserva apenas o Timer 0 para uso. Usando a definição abaixo é permitida a alocação de todos os timers (0, 1, 2 e 3) para uso com a biblioteca.
-  ESP32PWM::allocateTimer(0);
-  ESP32PWM::allocateTimer(1);
-  ESP32PWM::allocateTimer(2);
-  ESP32PWM::allocateTimer(3);
-
 #ifdef _DEBUG_
   Serial.begin(115200);
 #endif
@@ -65,6 +64,10 @@ void setup()
 
 void loop()
 {
+
+  blackCL = black;
+  blackCR = black;
+
   // Leitura dos sensores
   short sensorCenterLeftValue = analogRead(sensorCenterLeft);
   short sensorCenterValue = analogRead(sensorCenter);
@@ -85,7 +88,38 @@ void loop()
   Serial.println();
 #endif
 
-  if ((sensorRightValue > white) && (sensorLeftValue < black))
+    //define um novo minimo se o central estiver lendo branco
+  if (sensorCenterValue > 3500 && sensorCenterLeftValue < 1500){
+
+      blackCL = sensorCenterLeftValue;
+
+  }
+
+  if (sensorCenterLeftValue > 3500 && sensorCenterRightValue < 1500){
+
+      blackCR = sensorCenterRightValue;
+
+  }
+
+#ifdef _DEBUG_
+  Serial.print("black: ");
+  Serial.println(black);
+
+  Serial.println();
+
+  Serial.print("blackCL: ");
+  Serial.println(blackCL);
+
+  Serial.println();
+
+  Serial.print("blackCR: ");
+  Serial.println(blackCR);
+
+  Serial.println();
+#endif
+
+  //parar robo 
+  if ((sensorLeftValue > white) && (sensorRightValue < black))  //troquei right com left pq a faixa de parada (lap) é a da esquerda, a da direita é apenas curva
   {
     lapMarker = lapMarker + 1;
   }
@@ -102,7 +136,9 @@ void loop()
 #endif
 
   // Verificação se o robô está na linha com os sensores centrais
-  bool onTrack = (sensorCenterLeftValue > white && sensorCenterValue > white && sensorCenterRightValue > white);
+ // bool onTrack = (sensorCenterLeftValue > white  && sensorCenterValue > white && sensorCenterRightValue > white);
+
+    bool onTrack = (sensorCenterLeftValue > blackCL && sensorCenterValue > white && sensorCenterRightValue > blackCR); //talvez mudar o white e mudar para um valor especifico dos sensores laterais resolva
 
   // Cálculo do erro
   float error = sensorCenterValue - ((sensorCenterLeftValue + sensorCenterRightValue) / 2);
