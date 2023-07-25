@@ -1,10 +1,3 @@
-///// TODO: Ajustar motores de forma unilateral
-/*
-Como?
-- Erro Direto corrige motor esquerdo somente
-- Erro Esquerdo corrige motor esquerdo somente
-*/
-
 // ! Modos
 //* Enquanto a linha abaixo não for um comentário, a referente parte não será compilada
 #define _DEBUG_
