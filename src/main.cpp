@@ -13,10 +13,6 @@ constexpr const short white = 3800;
 constexpr const short black = 3799;
 short lapMarker = 0;
 
-// Variáveis para controle do estado do sensor de marcação
-bool rightSensorDetected = false;
-bool leftSensorDetected = false;
-
 // Definição dos pinos dos sensores e dos motores
 constexpr const short sensorCenterLeft = 14;
 constexpr const short sensorCenter = 27;
