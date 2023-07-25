@@ -1,5 +1,5 @@
 // ! Modos
-//* Enquanto a linha abaixo não for um comentário, a referente parte não será compilada
+//* Enquanto a linha abaixo for um comentário, a referente parte não será compilada
  #define _DEBUG_
 
 #include <Arduino.h>
@@ -7,16 +7,17 @@
 // Constantes para ajuste do controle
 constexpr const short baseSpeed = 155; // Resolução do Arduino: 8 bits
                                        // Resolução do ESP32: 10 bits
-constexpr const float turnRatio = 0.5;
-constexpr const short white  = 3000; //
-short black  = 1500; //
-//constexpr const short whiteCL = 3000; //
+ //definindo velocidades
+short speedLeft = 235;
+short speedRight = baseSpeed;
+constexpr const float turnRatio = 0.2;
+short black  = 2999; //
 short blackCL = 0; //
-
-//constexpr const short whiteCR = 3000; //
 short blackCR = 0; //
-
+constexpr const short white  = 3000; //
+ //
 short lapMarker = 0;
+short curve;
 
 // Variáveis para controle do estado do sensor de marcação
 bool rightSensorDetected = false;
@@ -60,10 +61,14 @@ void setup()
   pinMode(motorRightA, OUTPUT);
   pinMode(motorRightB, OUTPUT);
   pinMode(motorRightEnable, OUTPUT);
+
+  delay(1000);
 }
 
 void loop()
 {
+
+  
 
   blackCL = black;
   blackCR = black;
@@ -141,18 +146,82 @@ void loop()
     bool onTrack = (sensorCenterLeftValue > blackCL && sensorCenterValue > white && sensorCenterRightValue > blackCR); //talvez mudar o white e mudar para um valor especifico dos sensores laterais resolva
 
   // Cálculo do erro
-  float error = sensorCenterValue - ((sensorCenterLeftValue + sensorCenterRightValue) / 2);
+ // float error = sensorCenterValue - ((sensorCenterLeftValue + sensorCenterRightValue) / 2);
 
-  // Cálculo da correção para manter o robô na linha
-  float correction = error * turnRatio;
+//ajuste grosso
 
-  // Atualização da velocidade dos motores
-  short speedLeft = baseSpeed - correction;
-  short speedRight = baseSpeed - correction;
+   short errorcenterleft = sensorCenterLeftValue / sensorCenterValue;
+   short errorcenterright = sensorCenterRightValue / sensorCenterValue;
+   short errorcenterLR = errorcenterleft / errorcenterright;
+   short errorcenterRL = errorcenterright / errorcenterleft;  
 
-  // Limitação da velocidade dos motores
+if(sensorCenterValue != white ){
+
+        if(errorcenterleft > 1){
+
+              speedLeft = baseSpeed;
+              speedRight =  baseSpeed * errorcenterLR;
+
+        }else if(errorcenterright > 1){
+
+          speedLeft = baseSpeed * errorcenterRL;
+          speedRight = baseSpeed;
+        }else{
+
+    speedLeft = 255; speedRight = 0;
+
+
+}
+}
+
+
+
+//ajuste fino
+  short errorL = sensorCenterValue / sensorCenterLeftValue;
+  short errorR = sensorCenterValue / sensorCenterRightValue;
+  short errorLR = errorL/errorR;
+  short errorRL = errorR/errorL;
+
+// ajuste fino
+  if (errorLR != 1){
+      
+   if(errorLR > 1){ //ta mais pra direita; acelera motor direito e retarda motor esquerdo
+
+      short speedLeft = baseSpeed;
+      short speedRight = baseSpeed/errorLR;
+
+   }  
+
+ else{  //ta mais pra esquerda; aceleta motor esquerdo e retarda motor direito
+
+    short speedLeft = baseSpeed/errorRL;
+    short speedRight = baseSpeed;
+  }
+  }else{ //igual a 1
+
+      short speedLeft  = baseSpeed;
+      short speedRight = baseSpeed;
+
+  } 
+
+
+  
+    
+  
+short speedLeft  = baseSpeed;
+short speedRight = baseSpeed;
+
+   // Limitação da velocidade dos motores
   speedLeft = constrain(speedLeft, 0, baseSpeed);
   speedRight = constrain(speedRight, 0, baseSpeed);
+
+  // Cálculo da correção para manter o robô na linha
+ // float correction = error * turnRatio;
+  // Atualização da velocidade dos motores
+  //short speedLeft = baseSpeed - correction;
+  //short speedRight = baseSpeed - correction;
+
+
 
   // Controle dos motores
   controlMotor1(speedLeft);
@@ -162,11 +231,17 @@ void loop()
   Serial.print("onTrack: ");
   Serial.println(onTrack);
 
-  Serial.print("error: ");
-  Serial.println(error);
+  Serial.print("errorR: ");
+  Serial.println(errorR);
 
-  Serial.print("correction: ");
-  Serial.println(correction);
+  Serial.print("errorL: ");
+  Serial.println(errorL);
+
+  Serial.print("errorLR: ");
+  Serial.println(errorLR);
+
+//  Serial.print("correction: ");
+//  Serial.println(correction);
 
   Serial.print("speedLeft: ");
   Serial.println(speedLeft);
