@@ -12,7 +12,7 @@ Como?
 #include <Arduino.h>
 
 // Constantes para ajuste do controle
-constexpr const short baseSpeed = 65535; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
+constexpr const unsigned int baseSpeed = 65535; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
 constexpr const float turnRatio = 0.2;
 constexpr const short white = 3800;
 constexpr const short black = 3799;
@@ -103,7 +103,7 @@ void loop()
   // Verificação se o robô está na linha com o sensor central
   bool onTrack = (sensorCenterValue >= white);
 
-  // Cálculo da diferença
+  // Cálculo de diferença
   /*
   -: que que sejam o mais próximo ambos os valores
   +: Quero que eles sejam o mais diferentes o possível
@@ -120,8 +120,8 @@ void loop()
 
   // Atualização da velocidade dos motores
   // Quero que ele se afaste do branco, logo o motor oposto deve agir caso ele se aproxime
-  short speedLeft = baseSpeed - correctionRight;
-  short speedRight = baseSpeed - correctionLeft;
+  unsigned int speedLeft = baseSpeed - correctionRight;
+  unsigned int speedRight = baseSpeed - correctionLeft;
 
   // Limitação da velocidade dos motores
   speedLeft = constrain(speedLeft, 0, baseSpeed);
