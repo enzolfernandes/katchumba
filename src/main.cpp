@@ -7,10 +7,10 @@
 // Constantes para ajuste do controle
 constexpr const short sensorMaxValue = 4095;
 constexpr const short sensorMinValue = 75;
-constexpr const unsigned int baseSpeed = 65535; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
-constexpr const float turnRatio = 0.2;
-constexpr const short white = 3800;
-constexpr const short black = 3799;
+constexpr const unsigned int baseSpeed = 135; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
+constexpr const float turnRatio = 0.05;
+constexpr const short white = 3300;
+constexpr const short black = 1500;
 short lapMarker = 0;
 
 // Definição dos pinos dos sensores e dos motores
@@ -49,7 +49,7 @@ void setup()
   pinMode(motorLeftB, OUTPUT);
   pinMode(motorLeftEnable, OUTPUT);
   pinMode(motorRightA, OUTPUT);
-  pinMode(motorRightB, OUTPUT);
+  //pinMode(motorRightB, OUTPUT);
   pinMode(motorRightEnable, OUTPUT);
 }
 
@@ -73,6 +73,14 @@ void loop()
   Serial.println(sensorCenterRightValue);
 
   Serial.println();
+
+  Serial.print("sensorLeftValue: ");
+  Serial.println(sensorCenterLeftValue);
+  Serial.print("sensorRightValue: ");
+  Serial.println(sensorCenterRightValue);
+
+  Serial.println();
+
 #endif
 
   // Detecção no sensor de volta (Direito)
@@ -83,6 +91,7 @@ void loop()
   else if (lapMarker >= 2)
   {
     stopRobot();
+    lapMarker = 0;
   }
 
   // Verificação se o robô está na linha com o sensor central
@@ -109,6 +118,7 @@ void loop()
   -: que que sejam o mais próximo ambos os valores
   +: Quero que eles sejam o mais diferentes o possível
   */
+ 
   float differenceLeft = (sensorCenterValue - sensorCenterLeftValue);
   float differenceRight = (sensorCenterValue - sensorCenterRightValue);
   float differenceCenter = (sensorCenterValue - ((sensorCenterLeftValue + sensorCenterRightValue) / 2)); // Talvez não tenha utilidade
@@ -125,10 +135,11 @@ void loop()
   // Limitação da velocidade dos motores para valores cabíveis
   unsigned int speedLeft = constrain((baseSpeed - correctionLeft), 0, baseSpeed);
   unsigned int speedRight = constrain((baseSpeed - correctionRight), 0, baseSpeed);
+  
 
   // Controle dos motores
-  controlMotorLeft(speedLeft);
-  controlMotorRight(speedRight);
+  controlMotorLeft(baseSpeed);
+  controlMotorRight(baseSpeed);
 
 #ifdef _DEBUG_
 
