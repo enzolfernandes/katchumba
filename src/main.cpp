@@ -7,14 +7,14 @@
 // Constantes para ajuste do controle
 constexpr const short sensorMaxValue = 4095;
 constexpr const short sensorMinValue = 75;
-constexpr const short baseSpeed = 135; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
-constexpr const float turnRatio = 0.5;
-constexpr const float ajustRatio = 0.2;
+constexpr const short baseSpeed = 175; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
+constexpr const float turnRatio = 0.6;
+constexpr const float ajustRatio = 0.5;
 constexpr const short white = 3000;
 constexpr const short black = 1500;
 short lapMarker = 0;
 short curveWarning = 0;
-constexpr const short startTime = 500; // ms
+constexpr const short startTime = 2000; // ms
 
 // Definição dos pinos dos sensores e dos motores
 constexpr const short sensorCenterLeft = 14;
@@ -104,6 +104,7 @@ void loop()
     for (lapMarker = 1; lapMarker == 2; lapMarker++)
     {
       // TODO: Colocar loop infinito
+      delay(250);
       stopRobot();
     }
   }
@@ -144,7 +145,7 @@ void loop()
 #endif
   }
 
-  else if (onTrack == 1 || (sensorLeftValue <= white && sensorRightValue <= white))
+  else if (onTrack == 1 || (onTrack && (sensorLeftValue <= white) && (sensorRightValue <= white)))
   {
     controlMotorLeft(baseSpeed);
     controlMotorRight(baseSpeed);
@@ -220,6 +221,6 @@ void loop()
   }
 
 #ifdef _DEBUG_
-  delay(500);
+  delay(50);
 #endif
 }
