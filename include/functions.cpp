@@ -27,9 +27,6 @@ void stopMotorRight()
 // Função para parar o robô
 void stopRobot()
 {
-    while (true)
-    {
-        stopMotorLeft();
-        stopMotorRight();
-    }
+    stopMotorLeft();
+    stopMotorRight();
 }

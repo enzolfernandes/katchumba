@@ -163,10 +163,12 @@ void loop()
 
       if (leftCurve = 1)
       {
+        Serial.println("Esquerdo");
         stopMotorLeft();
       }
       else
       {
+        Serial.println("Direito");
         stopMotorRight();
       }
     }
@@ -194,6 +196,9 @@ void loop()
   else if (offTrack = 1)
   {
     stopRobot();
+#ifdef _DEBUG_
+    Serial.println("OFFTRACK");
+#endif
   }
 
   // Controle dos motores
