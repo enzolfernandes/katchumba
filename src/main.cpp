@@ -144,14 +144,13 @@ void loop()
     Serial.println("OFFTRACK");
 #endif
   }
-
-  else if (onTrack == 1 || (onTrack && (sensorLeftValue <= white) && (sensorRightValue <= white)))
+  else if (onTrack == 1)
   {
     controlMotorLeft(baseSpeed);
     controlMotorRight(baseSpeed);
 
 #ifdef _DEBUG_
-    Serial.println("ONTRACK OR CROSSROAD");
+    Serial.println("ONTRACK");
 #endif
   }
   else if (onTrack == 0)
