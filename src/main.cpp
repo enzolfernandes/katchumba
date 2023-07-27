@@ -7,11 +7,12 @@
 // Constantes para ajuste do controle
 constexpr const short sensorMaxValue = 4095;
 constexpr const short sensorMinValue = 75;
-constexpr const unsigned int baseSpeed = 135; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
-constexpr const float turnRatio = 0.05;
-constexpr const short white = 3300;
+constexpr const short baseSpeed = 135; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
+constexpr const float turnRatio = 0.5;
+constexpr const short white = 3000;
 constexpr const short black = 1500;
 short lapMarker = 0;
+constexpr const short startTime = 500; // ms
 
 // Definição dos pinos dos sensores e dos motores
 constexpr const short sensorCenterLeft = 14;
@@ -26,8 +27,11 @@ constexpr const short motorLeftB = 23;
 constexpr const short motorLeftEnable = 4;
 
 constexpr const short motorRightA = 32;
-constexpr const short motorRightB = 35;
+constexpr const short motorRightB = 35; //! Não pode Ser usado pois é só INPUT
 constexpr const short motorRightEnable = 33;
+
+short speedLeft = 0;
+short speedRight = 0;
 
 #include "functions.cpp"
 
@@ -49,8 +53,17 @@ void setup()
   pinMode(motorLeftB, OUTPUT);
   pinMode(motorLeftEnable, OUTPUT);
   pinMode(motorRightA, OUTPUT);
-  //pinMode(motorRightB, OUTPUT);
+  // pinMode(motorRightB, OUTPUT);
   pinMode(motorRightEnable, OUTPUT);
+
+  // Tempo para começar
+  delay(startTime);
+
+#ifdef _DEBUG_
+  Serial.println("---------");
+
+  Serial.println("START");
+#endif
 }
 
 void loop()
@@ -91,15 +104,17 @@ void loop()
   else if (lapMarker >= 2)
   {
     stopRobot();
-    lapMarker = 0;
+    lapMarker = 2;
   }
 
   // Verificação se o robô está na linha com o sensor central
-  bool onTrack = (sensorCenterValue >= white);
+  bool onTrack = (sensorCenterValue >= white) && (sensorCenterLeftValue <= black) && (sensorCenterRightValue <= black);
 
   // Detecção no sensor de curva (Esquerdo)
   bool curveWarning = (sensorLeftValue >= white) && (sensorRightValue <= black);
-  // TODO: Implementar lógica de curva?
+
+  // Saida do trajeto
+  bool offTrack = (sensorCenterValue <= black) && (sensorCenterLeftValue <= black) && (sensorCenterRightValue <= black);
 
 #ifdef _DEBUG_
 
@@ -109,67 +124,91 @@ void loop()
   Serial.println(onTrack);
   Serial.print("curveWarning: ");
   Serial.println(curveWarning);
+  Serial.print("offTrack: ");
+  Serial.println(offTrack);
 
   Serial.println();
 #endif
 
-  // Cálculo de Erro
-  /*
-  -: que que sejam o mais próximo ambos os valores
-  +: Quero que eles sejam o mais diferentes o possível
-  */
- 
-  float differenceLeft = (sensorCenterValue - sensorCenterLeftValue);
-  float differenceRight = (sensorCenterValue - sensorCenterRightValue);
-  float differenceCenter = (sensorCenterValue - ((sensorCenterLeftValue + sensorCenterRightValue) / 2)); // Talvez não tenha utilidade
+  if (onTrack == 1)
+  {
 
-  // Cálculo da correção para manter o robô na linha
-  // Correção converte valores do sensor para valores do motor
-  // Sensores center left e center right estão muito longe do centro logo a correção não pode ter um valor significativo
-  float correctionLeft = map(differenceLeft, sensorMinValue, sensorMaxValue, 0, baseSpeed) * turnRatio;
-  float correctionRight = map(differenceRight, sensorMinValue, sensorMaxValue, 0, baseSpeed) * turnRatio;
-  float correctionCenter = map(differenceCenter, sensorMinValue, sensorMaxValue, 0, baseSpeed) * turnRatio; // Talvez não tenha utilidade
+    // Cálculo de Erro
+    /*
+    -: que que sejam o mais próximo ambos os valores
+    +: Quero que eles sejam o mais diferentes o possível
+    */
 
-  // Atualização da velocidade dos motores
-  // Quero que ele se afaste do branco, logo o motor do mesmo lado deve reduzir a velocidade deve agir ele se aproxime
-  // Limitação da velocidade dos motores para valores cabíveis
-  unsigned int speedLeft = constrain((baseSpeed - correctionLeft), 0, baseSpeed);
-  unsigned int speedRight = constrain((baseSpeed - correctionRight), 0, baseSpeed);
-  
+    float differenceLeft = (sensorCenterValue - sensorCenterLeftValue);
+    float differenceRight = (sensorCenterValue - sensorCenterRightValue);
+    float differenceCenter = (sensorCenterValue - ((sensorCenterLeftValue + sensorCenterRightValue) / 2)); // Talvez não tenha utilidade
 
-  // Controle dos motores
-  controlMotorLeft(baseSpeed);
-  controlMotorRight(baseSpeed);
+    // Cálculo da correção para manter o robô na linha
+    // Correção converte valores do sensor para valores do motor
+    // Sensores center left e center right estão muito longe do centro logo a correção não pode ter um valor significativo
+    float correctionLeft = map(differenceLeft, sensorMinValue, sensorMaxValue, 0, baseSpeed) * turnRatio;
+    float correctionRight = map(differenceRight, sensorMinValue, sensorMaxValue, 0, baseSpeed) * turnRatio;
+    float correctionCenter = map(differenceCenter, sensorMinValue, sensorMaxValue, 0, baseSpeed) * turnRatio; // Talvez não tenha utilidade
+
+    // Atualização da velocidade dos motores
+    // Quero que ele se afaste do branco, logo o motor do mesmo lado deve reduzir a velocidade deve agir ele se aproxime
+    // Limitação da velocidade dos motores para valores cabíveis
+    speedLeft = constrain((baseSpeed - correctionLeft), 0, baseSpeed);
+    speedRight = constrain((baseSpeed - correctionRight), 0, baseSpeed);
+
+    if (curveWarning = 1)
+    {
+
+      bool leftCurve = (sensorCenterValue <= white) && (sensorCenterLeftValue <= white) && (sensorCenterRightValue <= black);
+
+      if (leftCurve = 1)
+      {
+        stopMotorLeft();
+      }
+      else
+      {
+        stopMotorRight();
+      }
+    }
 
 #ifdef _DEBUG_
 
-  Serial.print("differenceLeft: ");
-  Serial.println(differenceLeft);
-  Serial.print("differenceRight: ");
-  Serial.println(differenceRight);
-  Serial.print("differenceCenter: ");
-  Serial.println(differenceCenter);
+    Serial.print("differenceLeft: ");
+    Serial.println(differenceLeft);
+    Serial.print("differenceRight: ");
+    Serial.println(differenceRight);
+    Serial.print("differenceCenter: ");
+    Serial.println(differenceCenter);
 
-  Serial.println();
+    Serial.println();
 
-  Serial.print("correctionLeft: ");
-  Serial.println(correctionLeft);
-  Serial.print("correctionRight: ");
-  Serial.println(correctionRight);
-  Serial.print("correctionCenter: ");
-  Serial.println(correctionCenter);
+    Serial.print("correctionLeft: ");
+    Serial.println(correctionLeft);
+    Serial.print("correctionRight: ");
+    Serial.println(correctionRight);
+    Serial.print("correctionCenter: ");
+    Serial.println(correctionCenter);
+    Serial.println();
+#endif
+  }
+  else if (offTrack = 1)
+  {
+    stopRobot();
+  }
 
-  Serial.println();
+  // Controle dos motores
 
+  controlMotorLeft(speedLeft);
+  controlMotorRight(speedRight);
+
+#ifdef _DEBUG_
   Serial.print("speedLeft: ");
   Serial.println(speedLeft);
   Serial.print("speedRight: ");
   Serial.println(speedRight);
 
   Serial.println();
-#endif
 
-#ifdef _DEBUG_
   delay(500);
 #endif
 }

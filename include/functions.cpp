@@ -10,8 +10,18 @@ void controlMotorLeft(short speed)
 void controlMotorRight(short speed)
 {
     digitalWrite(motorRightA, HIGH);
-    //digitalWrite(motorRightB, LOW);
     analogWrite(motorRightEnable, speed);
+}
+
+void stopMotorLeft()
+{
+    digitalWrite(motorLeftA, LOW);
+    digitalWrite(motorLeftB, LOW);
+}
+
+void stopMotorRight()
+{
+    digitalWrite(motorRightA, LOW);
 }
 
 // Função para parar o robô
@@ -19,9 +29,7 @@ void stopRobot()
 {
     while (true)
     {
-        digitalWrite(motorLeftA, LOW);
-        digitalWrite(motorLeftB, LOW);
-        digitalWrite(motorRightA, LOW);
-        digitalWrite(motorRightB, LOW);
+        stopMotorLeft();
+        stopMotorRight();
     }
 }
