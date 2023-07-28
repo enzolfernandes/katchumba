@@ -9,7 +9,7 @@ constexpr const short sensorMaxValue = 4095;
 constexpr const short sensorMinValue = 75;
 constexpr const short baseSpeed = 155; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
 constexpr const float turnRatio = 0.3;
-constexpr const float ajustRatio = 1.6;
+constexpr const float ajustRatio = 2.2;
 constexpr const short white = 3000;
 constexpr const short black = 1500;
 short lapMarker = 0;
@@ -160,8 +160,8 @@ void loop()
     -: que que sejam o mais próximo ambos os valores
     +: Quero que eles sejam o mais diferentes o possível
     */
-    float differenceLeft = (sensorCenterValue - sensorCenterLeftValue);
-    float differenceRight = (sensorCenterValue - sensorCenterRightValue);
+    float differenceLeft = (black - sensorCenterLeftValue);
+    float differenceRight = (black - sensorCenterRightValue);
     float differenceCenter = (sensorCenterValue - ((sensorCenterLeftValue + sensorCenterRightValue) / 2)); // Talvez não tenha utilidade
 
     // Cálculo da correção para manter o robô na linha
