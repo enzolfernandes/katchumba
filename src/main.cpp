@@ -7,9 +7,9 @@
 // Constantes para ajuste do controle
 constexpr const short sensorMaxValue = 4095;
 constexpr const short sensorMinValue = 75;
-constexpr const short baseSpeed = 175; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
-constexpr const float turnRatio = 0.6;
-constexpr const float ajustRatio = 0.5;
+constexpr const short baseSpeed = 155; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
+constexpr const float turnRatio = 0.3;
+constexpr const float ajustRatio = 1.6;
 constexpr const short white = 3000;
 constexpr const short black = 1500;
 short lapMarker = 0;
