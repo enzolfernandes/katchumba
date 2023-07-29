@@ -7,14 +7,14 @@
 // Constantes para ajuste do controle
 constexpr const short sensorMaxValue = 4095;
 constexpr const short sensorMinValue = 75;
-constexpr const short baseSpeed = 155; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
-constexpr const float turnRatio = 0.3;
-constexpr const float ajustRatio = 2.2;
+constexpr const short baseSpeed = 120; // Resolução da GPIO ESP32: 16 bits (0 a 65535)
+constexpr const float turnRatio = 0.5;
+constexpr const float ajustRatio = 2;
 constexpr const short white = 3000;
 constexpr const short black = 1500;
 short lapMarker = 0;
 short curveWarning = 0;
-constexpr const short startTime = 2000; // ms
+constexpr const short startTime = 5000; // ms
 
 // Definição dos pinos dos sensores e dos motores
 constexpr const short sensorCenterLeft = 14;
@@ -100,19 +100,32 @@ void loop()
   // Detecção no sensor de volta (Direito)
   if ((sensorRightValue >= white) && (sensorLeftValue <= black))
   {
-
-    for (lapMarker = 1; lapMarker == 2; lapMarker++)
+    while (sensorRightValue > black)
     {
-      // TODO: Colocar loop infinito
-      delay(250);
-      stopRobot();
+      sensorCenterLeftValue = analogRead(sensorCenterLeft);
+      sensorCenterValue = analogRead(sensorCenter);
+      sensorCenterRightValue = analogRead(sensorCenterRight);
+      sensorRightValue = analogRead(sensorRight);
+      sensorLeftValue = analogRead(sensorLeft);
     }
+    lapMarker = lapMarker + 1;
   }
 
   // Detecção no sensor de curva (Esquerdo)
 
   if ((sensorLeftValue >= white) && (sensorRightValue <= black))
   {
+    while (sensorLeftValue > black)
+    {
+      sensorCenterLeftValue = analogRead(sensorCenterLeft);
+      sensorCenterValue = analogRead(sensorCenter);
+      sensorCenterRightValue = analogRead(sensorCenterRight);
+      sensorRightValue = analogRead(sensorRight);
+      sensorLeftValue = analogRead(sensorLeft);
+#ifdef _DEBUG_
+      Serial.println("MARCACAO ESQUERDA");
+#endif
+    }
     curveWarning = curveWarning + 1;
   }
 
@@ -219,6 +232,11 @@ void loop()
     }
   }
 
+  if (lapMarker == 2)
+  {
+    delay(250);
+    stopRobot();
+  }
 #ifdef _DEBUG_
   delay(50);
 #endif
