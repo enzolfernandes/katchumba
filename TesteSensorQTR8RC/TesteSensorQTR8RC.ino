@@ -7,14 +7,6 @@
 #define TIMEOUT 2500        // Tempo máximo permitido para a leitura de um sensor
 #define EMITTER_PIN 3       // Pino do emissor do sensor QTR
 
-#define preto 100           //sensor detecta preto com valores abaixo de 100
-#define branco 500          //sensor detecta branco com valores acima de 500
-
-//pinos dos motores
-int motor1a = 21;
-int motor1b = 19;
-int enable1 = 18;
-
 QTRSensors qtr;
 
 void setup() {
@@ -51,16 +43,5 @@ void loop() {
     Serial.print('\t');
   }
   Serial.println();
-
-  if (sensorValues<=preto) {
-    analogWrite(motor1a, 0);
-    analogWrite(motor1b, 0);
-  }
-
-  else if {
-    analogWrite(motor1a, 255);
-    analogWrite(motor1b, 0);
-  }
-
   delay(500);
 }
